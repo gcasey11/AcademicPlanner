@@ -78,22 +78,21 @@ public class MainActivity extends AppCompatActivity {
     );
 
     private void setupListViewListener() {
-//        listView.setOnItemLongClickListener((parent, view, position, rowId) -> {
-//            Log.i("MainActivity", "Long Clicked item " + position);
-//            AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-//            builder.setTitle(R.string.dialog_delete_title)
-//                    .setMessage(R.string.dialog_delete_msg)
-//                    .setPositiveButton(R.string.delete, (dialogInterface, i) -> {
-//                        items.remove(position); // Remove item from the ArrayList
-//                        adapter.notifyDataSetChanged(); // Notify listView adapter to update the list
-//                    })
-//                    .setNegativeButton(R.string.cancel, (dialogInterface, i) -> {
-//                        // User cancelled the dialog
-//                        // Nothing happens
-//                    });
-//            builder.create().show();
-//            return true;
-//        });
+        adapter.setOnItemLongClickListener(position -> {
+            Log.i("MainActivity", "Long Clicked item " + position);
+            AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+            builder.setTitle(R.string.dialog_delete_title)
+                    .setMessage(R.string.dialog_delete_msg)
+                    .setPositiveButton(R.string.delete, (dialogInterface, i) -> {
+                        dataModels.remove(position); // Remove item from the ArrayList
+                        adapter.notifyDataSetChanged(); // Notify listView adapter to update the list
+                    })
+                    .setNegativeButton(R.string.cancel, (dialogInterface, i) -> {
+                        // User cancelled the dialog
+                        // Nothing happens
+                    });
+            builder.create().show();
+        });
         // Set a click listener on the checkbox within each list item
         adapter.setOnCheckboxClickListener(position -> {
             DataModel dataModel = adapter.getItem(position);
