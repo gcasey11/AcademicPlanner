@@ -17,10 +17,15 @@ public class CustomAdapter extends ArrayAdapter<DataModel> {
     private ArrayList<DataModel> dataSet;
     private Context mContext;
     private OnCheckboxClickListener onCheckboxClickListener;
+    private OnItemClickListener onItemClickListener;
 
     // Interface for checkbox click listener
     public interface OnCheckboxClickListener {
         void onCheckboxClick(int position);
+    }
+
+    public interface OnItemClickListener {
+        void onItemClick(int position);
     }
     
     public CustomAdapter(ArrayList<DataModel> dataSet, Context mContext) {
@@ -32,6 +37,10 @@ public class CustomAdapter extends ArrayAdapter<DataModel> {
     // Setter for the listener
     public void setOnCheckboxClickListener(OnCheckboxClickListener listener) {
         this.onCheckboxClickListener = listener;
+    }
+
+    public void setOnItemClickListener(OnItemClickListener listener) {
+        this.onItemClickListener = listener;
     }
 
     private static class ViewHolder {
@@ -75,6 +84,13 @@ public class CustomAdapter extends ArrayAdapter<DataModel> {
                 onCheckboxClickListener.onCheckboxClick(position);
             }
         });
+
+        viewHolder.txtName.setOnClickListener(v -> {
+            if (onItemClickListener != null) {
+                onItemClickListener.onItemClick(position);
+            }
+        });
+
         return result;
     }
 }

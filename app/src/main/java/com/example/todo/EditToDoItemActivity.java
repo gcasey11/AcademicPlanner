@@ -18,28 +18,40 @@ public class EditToDoItemActivity extends Activity
 		
 		// Populate the screen using the layout
 		setContentView(R.layout.activity_edit_item);
-		
-		// Get the data from the main activity screen
-		String editItem = getIntent().getStringExtra("item");
-		position = getIntent().getIntExtra("position",-1);
-		
+
+
 		// Show original content in the text field
 		etItem = (EditText)findViewById(R.id.etEditItem);
-		etItem.setText(editItem);
+
+		// Get the data from the main activity screen
+		boolean isNew = getIntent().getBooleanExtra("isNew", false);
+
+		if (!isNew) {
+			String editItem = getIntent().getStringExtra("item");
+			position = getIntent().getIntExtra("position",-1);
+
+
+			etItem.setText(editItem);
+		}
+
 	}
 
 	public void onSubmit(View v) {
-		etItem = (EditText) findViewById(R.id.etEditItem);
-
 		// Prepare data intent for sending it back
 		Intent data = new Intent();
 
 		// Pass relevant data back as a result
 		data.putExtra("item", etItem.getText().toString());
+		data.putExtra("isNew", getIntent().getBooleanExtra("isNew", false));
 		data.putExtra("position", position);
 
 		// Activity finishes OK, return the data
 		setResult(RESULT_OK, data); // Set result code and bundle data for response
 		finish(); // Close the activity, pass data to parent
-	} 
+	}
+
+	public void onCancel(View v) {
+		setResult(RESULT_CANCELED); // Set result code and bundle data for response
+		finish();// Close the activity, pass data to parent
+	}
 }

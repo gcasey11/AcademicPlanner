@@ -22,6 +22,7 @@ public class MainActivity extends AppCompatActivity {
     ArrayList<String> items;
     CustomAdapter adapter;
     EditText addItemEditText;
+    ArrayList<DataModel> dataModels = new ArrayList<>();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -31,7 +32,7 @@ public class MainActivity extends AppCompatActivity {
         listView = findViewById(R.id.lstView);
 
 // Create an adapter for the list view using Android's built-in item layout
-        ArrayList<DataModel> dataModels = new ArrayList<>();
+
         dataModels.add(new DataModel("item one", false));
         dataModels.add(new DataModel("item two", false));
         adapter = new CustomAdapter(dataModels, this);
@@ -45,52 +46,79 @@ public class MainActivity extends AppCompatActivity {
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
                 if (result.getResultCode() == RESULT_OK) {
-// Extract name value from result extras
+                    // Extract name value from result extras
                     assert result.getData() != null;
                     String editedItem = Objects.requireNonNull(result.getData().getExtras()).getString("item");
-                    int position = result.getData().getIntExtra("position", -1);
-                    items.set(position, editedItem);
-                    Log.i("Updated item in list ", editedItem + ", position: " + position);
-// Make a standard toast that just contains text
-                    Toast.makeText(getApplicationContext(), "Updated: " + editedItem,
-                            Toast.LENGTH_SHORT).show();
+                    boolean isNew = result.getData().getBooleanExtra("isNew", false);
+                    if (!isNew) {
+                        int position = result.getData().getIntExtra("position", -1);
+//                        items.set(position, editedItem);
+                        dataModels.set(position, new DataModel(editedItem, false));
+                        Log.i("Updated item in list ", editedItem + ", position: " + position);
+                        // Make a standard toast that just contains text
+                        Toast.makeText(getApplicationContext(), "Updated: " + editedItem,
+                                Toast.LENGTH_SHORT).show();
+                    }
+                    else {
+                        dataModels.add(new DataModel(editedItem, false));
+                        Log.i("Added item to list ", editedItem);
+                        // Make a standard toast that just contains text
+                        Toast.makeText(getApplicationContext(), "Added: " + editedItem,
+                                Toast.LENGTH_SHORT).show();
+
+                    }
+
+
                     adapter.notifyDataSetChanged();
+                }
+                else if (result.getResultCode() == RESULT_CANCELED) {
+                    // User cancelled the activity
                 }
             }
     );
 
     private void setupListViewListener() {
-        listView.setOnItemLongClickListener((parent, view, position, rowId) -> {
-            Log.i("MainActivity", "Long Clicked item " + position);
-            AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-            builder.setTitle(R.string.dialog_delete_title)
-                    .setMessage(R.string.dialog_delete_msg)
-                    .setPositiveButton(R.string.delete, (dialogInterface, i) -> {
-                        items.remove(position); // Remove item from the ArrayList
-                        adapter.notifyDataSetChanged(); // Notify listView adapter to update the list
-                    })
-                    .setNegativeButton(R.string.cancel, (dialogInterface, i) -> {
-                        // User cancelled the dialog
-                        // Nothing happens
-                    });
-            builder.create().show();
-            return true;
-        });
+//        listView.setOnItemLongClickListener((parent, view, position, rowId) -> {
+//            Log.i("MainActivity", "Long Clicked item " + position);
+//            AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+//            builder.setTitle(R.string.dialog_delete_title)
+//                    .setMessage(R.string.dialog_delete_msg)
+//                    .setPositiveButton(R.string.delete, (dialogInterface, i) -> {
+//                        items.remove(position); // Remove item from the ArrayList
+//                        adapter.notifyDataSetChanged(); // Notify listView adapter to update the list
+//                    })
+//                    .setNegativeButton(R.string.cancel, (dialogInterface, i) -> {
+//                        // User cancelled the dialog
+//                        // Nothing happens
+//                    });
+//            builder.create().show();
+//            return true;
+//        });
         // Set a click listener on the checkbox within each list item
         adapter.setOnCheckboxClickListener(position -> {
             DataModel dataModel = adapter.getItem(position);
             assert dataModel != null;
             dataModel.setChecked(!dataModel.isChecked());
             adapter.notifyDataSetChanged();});
+
+        // Set a click listener on the list item
+        adapter.setOnItemClickListener(position -> {
+            // Takes you to the edit item activity
+            Intent intent = new Intent(this, EditToDoItemActivity.class);
+            // Sets that the item is new and being added rather than edited
+            intent.putExtra("isNew", false);
+            intent.putExtra("item", dataModels.get(position).getName());
+            intent.putExtra("position", position);
+            mLauncher.launch(intent);
+        });
     }
 
     public void onAddItemClick(View view) {
-        String toAddString = addItemEditText.getText().toString();
-        if (!toAddString.isEmpty()) {
-//            adapter.add(toAddString); // Add text to list view adapter
-            adapter.add(new DataModel(toAddString, false));
-            addItemEditText.setText("");
-        }
+        // Takes you to the edit item activity
+        Intent intent = new Intent(this, EditToDoItemActivity.class);
+        // Sets that the item is new and being added rather than edited
+        intent.putExtra("isNew", true);
+        mLauncher.launch(intent);
     }
 }
 
