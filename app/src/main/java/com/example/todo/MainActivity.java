@@ -13,7 +13,9 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity {
@@ -33,8 +35,8 @@ public class MainActivity extends AppCompatActivity {
 
 // Create an adapter for the list view using Android's built-in item layout
 
-        dataModels.add(new DataModel("item one", false));
-        dataModels.add(new DataModel("item two", false));
+        dataModels.add(new DataModel("item one",  false, "Assignment", LocalDateTime.now()));
+        dataModels.add(new DataModel("item two", false, "Exam", LocalDateTime.now()));
         adapter = new CustomAdapter(dataModels, this);
 
         listView.setAdapter(adapter);
@@ -49,18 +51,19 @@ public class MainActivity extends AppCompatActivity {
                     // Extract name value from result extras
                     assert result.getData() != null;
                     String editedItem = Objects.requireNonNull(result.getData().getExtras()).getString("item");
+                    String type = Objects.requireNonNull(result.getData().getExtras()).getString("type");
+                    LocalDateTime dateTime = (LocalDateTime) Objects.requireNonNull(result.getData().getExtras()).get("date");
                     boolean isNew = result.getData().getBooleanExtra("isNew", false);
                     if (!isNew) {
                         int position = result.getData().getIntExtra("position", -1);
-//                        items.set(position, editedItem);
-                        dataModels.set(position, new DataModel(editedItem, false));
+                        dataModels.set(position, new DataModel(editedItem, false, type, dateTime));
                         Log.i("Updated item in list ", editedItem + ", position: " + position);
                         // Make a standard toast that just contains text
                         Toast.makeText(getApplicationContext(), "Updated: " + editedItem,
                                 Toast.LENGTH_SHORT).show();
                     }
                     else {
-                        dataModels.add(new DataModel(editedItem, false));
+                        dataModels.add(new DataModel(editedItem, false, type, dateTime));
                         Log.i("Added item to list ", editedItem);
                         // Make a standard toast that just contains text
                         Toast.makeText(getApplicationContext(), "Added: " + editedItem,
@@ -108,6 +111,8 @@ public class MainActivity extends AppCompatActivity {
             intent.putExtra("isNew", false);
             intent.putExtra("item", dataModels.get(position).getName());
             intent.putExtra("position", position);
+            intent.putExtra("type", dataModels.get(position).getType());
+            intent.putExtra("date", dataModels.get(position).getDate());
             mLauncher.launch(intent);
         });
     }
