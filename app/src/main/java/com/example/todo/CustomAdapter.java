@@ -10,6 +10,8 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 
 public class CustomAdapter extends ArrayAdapter<DataModel> {
@@ -54,6 +56,8 @@ public class CustomAdapter extends ArrayAdapter<DataModel> {
 
     private static class ViewHolder {
         TextView txtName;
+        TextView selectionType;
+        TextView dueDate;
         CheckBox checkBox;
     }
 
@@ -72,21 +76,38 @@ public class CustomAdapter extends ArrayAdapter<DataModel> {
     public View getView(int position, View convertView, ViewGroup parent) {
         ViewHolder viewHolder;
         View result;
+
+        // If the view is not recycled, inflate the layout
         if (convertView == null) {
             viewHolder = new ViewHolder();
             convertView = LayoutInflater.from(parent.getContext()).inflate(R.layout.raw_item, parent, false);
             viewHolder.txtName = convertView.findViewById(R.id.txtName);
             viewHolder.checkBox = convertView.findViewById(R.id.checkBox);
+            viewHolder.selectionType = convertView.findViewById(R.id.selection_type);
+            viewHolder.dueDate = convertView.findViewById(R.id.due_date);
             result = convertView;
             convertView.setTag(viewHolder);
         } else {
             viewHolder = (ViewHolder) convertView.getTag();
             result = convertView;
         }
+
         DataModel dataModel = getItem(position);
         assert dataModel != null;
         viewHolder.txtName.setText(dataModel.getName());
         viewHolder.checkBox.setChecked(dataModel.isChecked());
+        viewHolder.selectionType.setText(dataModel.getType());
+
+        // If the date is in the future, show the date, otherwise show "OVERDUE"
+        if (dataModel.getDate().isAfter(LocalDateTime.now())) {
+            DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+            String formattedDate = dateFormat.format(dataModel.getDate());
+            viewHolder.dueDate.setText(formattedDate);
+        }
+        else {
+            viewHolder.dueDate.setText("OVERDUE");
+        }
+
 
         viewHolder.checkBox.setOnClickListener(v -> {
             if (onCheckboxClickListener != null) {
@@ -101,6 +122,32 @@ public class CustomAdapter extends ArrayAdapter<DataModel> {
         });
 
         viewHolder.txtName.setOnLongClickListener(v -> {
+            if (onItemLongClickListener != null) {
+                onItemLongClickListener.onItemLongClick(position);
+            }
+            return true;
+        });
+
+        viewHolder.selectionType.setOnClickListener(v -> {
+            if (onItemClickListener != null) {
+                onItemClickListener.onItemClick(position);
+            }
+        });
+
+        viewHolder.selectionType.setOnLongClickListener(v -> {
+            if (onItemLongClickListener != null) {
+                onItemLongClickListener.onItemLongClick(position);
+            }
+            return true;
+        });
+
+        viewHolder.dueDate.setOnClickListener(v -> {
+            if (onItemClickListener != null) {
+                onItemClickListener.onItemClick(position);
+            }
+        });
+
+        viewHolder.dueDate.setOnLongClickListener(v -> {
             if (onItemLongClickListener != null) {
                 onItemLongClickListener.onItemLongClick(position);
             }

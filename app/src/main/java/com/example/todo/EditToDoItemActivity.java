@@ -1,6 +1,7 @@
 package com.example.todo;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.content.Intent;
@@ -19,6 +20,7 @@ import android.widget.Toast;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Locale;
 
 
@@ -28,8 +30,7 @@ public class EditToDoItemActivity extends Activity implements
 	public int position=0;
 	EditText etItem;
 	Spinner spinner;
-	String[] type;
-	private TextView showText;
+	ArrayList<String> type = new ArrayList<>();
 	private Button calendarButton;
 	private Button timeButton;
 	private boolean isNew;
@@ -47,35 +48,28 @@ public class EditToDoItemActivity extends Activity implements
 
 		// Show original content in the text field
 		etItem = (EditText)findViewById(R.id.etEditItem);
-		type = getResources().getStringArray(R.array.type);
-		Spinner spin = (Spinner) findViewById(R.id.spinner);
-		spin.setOnItemSelectedListener(this);
 
-		//Creating the ArrayAdapter instance having the country list
+		type.add("Class");
+		type.add("Assignment");
+		type.add("Exam");
+
+		spinner = (Spinner) findViewById(R.id.spinner);
+		spinner.setOnItemSelectedListener(this);
+
 		ArrayAdapter aa = new ArrayAdapter(this,android.R.layout.simple_spinner_item,type);
 		aa.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		//Setting the ArrayAdapter data on the Spinner
-		spin.setAdapter(aa);
+		spinner.setAdapter(aa);
 
 		// Calendar Date Picker
 		calendarButton = findViewById(R.id.calendarButton);
 
-		calendarButton.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				openCalendarDialog();
-			}
-		});
+		calendarButton.setOnClickListener(v -> openCalendarDialog());
 
 		// Time Picker
 		timeButton = findViewById(R.id.timeButton);
 
-		timeButton.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				openTimeDialog();
-			}
-		});
+		timeButton.setOnClickListener(v -> openTimeDialog());
 
 		// Get the data from the main activity screen
 		isNew = getIntent().getBooleanExtra("isNew", false);
@@ -85,6 +79,8 @@ public class EditToDoItemActivity extends Activity implements
 			position = getIntent().getIntExtra("position",-1);
 			date = (LocalDateTime) getIntent().getSerializableExtra("date");
 			etItem.setText(editItem);
+			spinner.setSelection(type.indexOf(getIntent().getStringExtra("type")));
+
 		}
 		else {
 			date = LocalDateTime.now();
@@ -105,6 +101,7 @@ public class EditToDoItemActivity extends Activity implements
 		data.putExtra("isNew", getIntent().getBooleanExtra("isNew", false));
 		data.putExtra("type", spinner.getSelectedItem().toString());
 		data.putExtra("position", position);
+		data.putExtra("date", date);
 
 		// Activity finishes OK, return the data
 		setResult(RESULT_OK, data); // Set result code and bundle data for response
@@ -112,14 +109,25 @@ public class EditToDoItemActivity extends Activity implements
 	}
 
 	public void onCancel(View v) {
-		setResult(RESULT_CANCELED); // Set result code and bundle data for response
-		finish();// Close the activity, pass data to parent
+		AlertDialog.Builder builder = new AlertDialog.Builder(this);
+		builder.setTitle("Cancelling")
+				.setMessage("Are you sure you want to cancel this edit? Your unsaved changes will be discarded if you click YES")
+				.setPositiveButton(R.string.delete, (dialogInterface, i) -> {
+					setResult(RESULT_CANCELED); // Set result code and bundle data for response
+					finish(); // Close the activity, pass data to parent
+				})
+				.setNegativeButton(R.string.cancel, (dialogInterface, i) -> {
+					// User cancelled the dialog
+					// Nothing happens
+				});
+		builder.create().show();
+
 	}
 
 	//Performing action onItemSelected and onNothing selected
 	@Override
 	public void onItemSelected(AdapterView<?> arg0, View arg1, int position, long id) {
-		Toast.makeText(getApplicationContext(), type[position] , Toast.LENGTH_LONG).show();
+		Toast.makeText(getApplicationContext(), type.get(position) , Toast.LENGTH_LONG).show();
 	}
 	@Override
 	public void onNothingSelected(AdapterView<?> arg0) {
@@ -132,16 +140,13 @@ public class EditToDoItemActivity extends Activity implements
 	}
 
 	private void openCalendarDialog() {
-		DatePickerDialog calendarDialog = new DatePickerDialog(this, new DatePickerDialog.OnDateSetListener() {
-			@Override
-			public void onDateSet(DatePicker datePicker, int year, int month, int day) {
-				month = month + 1;
+		DatePickerDialog calendarDialog = new DatePickerDialog(this, (datePicker, year, month, day) -> {
+            month = month + 1;
 
-				date = LocalDateTime.of(year, month, day, date.getHour(), date.getMinute());
-				calendarButton.setText(date.getDayOfMonth() + "/" + date.getMonthValue() + "/" + date.getYear());
+            date = LocalDateTime.of(year, month, day, date.getHour(), date.getMinute());
+            calendarButton.setText(date.getDayOfMonth() + "/" + date.getMonthValue() + "/" + date.getYear());
 
-			}
-		}, !isNew ? date.getYear() : LocalDateTime.now().getYear(),
+        }, !isNew ? date.getYear() : LocalDateTime.now().getYear(),
 				!isNew ? date.getMonthValue() - 1 : LocalDateTime.now().getMonthValue() - 1,
 				!isNew ? date.getDayOfMonth() : LocalDateTime.now().getDayOfMonth());
 
@@ -149,15 +154,12 @@ public class EditToDoItemActivity extends Activity implements
 	}
 
 	private void openTimeDialog() {
-		TimePickerDialog timePickerDialog = new TimePickerDialog(this, new TimePickerDialog.OnTimeSetListener() {
-			@Override
-			public void onTimeSet(TimePicker timePicker, int hours, int minutes) {
-				date = LocalDateTime.of(date.getYear(), date.getMonthValue(), date.getDayOfMonth(), hours, minutes);
-				DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("HH:mm");
-				String formattedTime = dateFormat.format(date);
-				timeButton.setText(formattedTime);
-			}
-		}, !isNew ? date.getHour() : LocalDateTime.now().getHour(), !isNew ? date.getMinute() : LocalDateTime.now().getMinute(), true);
+		TimePickerDialog timePickerDialog = new TimePickerDialog(this, (timePicker, hours, minutes) -> {
+            date = LocalDateTime.of(date.getYear(), date.getMonthValue(), date.getDayOfMonth(), hours, minutes);
+            DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("HH:mm");
+            String formattedTime = dateFormat.format(date);
+            timeButton.setText(formattedTime);
+        }, !isNew ? date.getHour() : LocalDateTime.now().getHour(), !isNew ? date.getMinute() : LocalDateTime.now().getMinute(), true);
 
 		timePickerDialog.show();
 	}
