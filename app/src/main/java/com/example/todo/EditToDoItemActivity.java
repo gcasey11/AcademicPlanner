@@ -105,18 +105,23 @@ public class EditToDoItemActivity extends Activity implements
 	 */
 	public void onSubmit(View v) {
 		// Prepare data intent for sending it back
-		Intent data = new Intent();
+		if (etItem.getText().toString().isEmpty()) {
+			Toast.makeText(this, "Please enter a name", Toast.LENGTH_SHORT).show();
+		}
+		else {
+			Intent data = new Intent();
 
-		// Pass relevant data back as a result
-		data.putExtra("item", etItem.getText().toString());
-		data.putExtra(EXTRA_IS_NEW, getIntent().getBooleanExtra(EXTRA_IS_NEW, false));
-		data.putExtra("type", spinner.getSelectedItem().toString());
-		data.putExtra("position", position);
-		data.putExtra("date", date);
+			// Pass relevant data back as a result
+			data.putExtra("item", etItem.getText().toString());
+			data.putExtra(EXTRA_IS_NEW, getIntent().getBooleanExtra(EXTRA_IS_NEW, false));
+			data.putExtra("type", spinner.getSelectedItem().toString());
+			data.putExtra("position", position);
+			data.putExtra("date", date);
 
-		// Activity finishes OK, return the data
-		setResult(RESULT_OK, data); // Set result code and bundle data for response
-		finish(); // Close the activity, pass data to parent
+			// Activity finishes OK, return the data
+			setResult(RESULT_OK, data); // Set result code and bundle data for response
+			finish(); // Close the activity, pass data to parent
+		}
 	}
 
 	/**

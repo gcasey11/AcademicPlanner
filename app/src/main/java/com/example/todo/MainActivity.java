@@ -49,7 +49,7 @@ public class MainActivity extends AppCompatActivity {
                         Toast.makeText(getApplicationContext(), "Updated: " + editedItem,
                                 Toast.LENGTH_SHORT).show();
                     } else {
-                        dataModels.add(new DataModel(editedItem, false, type, dateTime));
+                        dataModels.add(0, new DataModel(editedItem, false, type, dateTime));
                         assert editedItem != null;
                         Log.i("Added item to list ", editedItem);
                         // Make a standard toast that just contains text
