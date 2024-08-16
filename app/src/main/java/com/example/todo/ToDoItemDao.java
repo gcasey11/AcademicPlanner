@@ -1,7 +1,6 @@
 package com.example.todo;
 
 import androidx.room.Dao;
-import androidx.room.Delete;
 import androidx.room.Insert;
 import androidx.room.Query;
 
@@ -12,7 +11,7 @@ public interface ToDoItemDao {
     @Query("SELECT * FROM todolist")
     List<ToDoItem> listAll();
 
-    @Query("SELECT * FROM todolist ORDER BY toDoItemChecked ASC, toDoItemDate DESC")
+    @Query("SELECT * FROM todolist ORDER BY toDoItemChecked ASC, toDoItemDate ASC")
     List<ToDoItem> listAllSorted();
 
     @Insert
