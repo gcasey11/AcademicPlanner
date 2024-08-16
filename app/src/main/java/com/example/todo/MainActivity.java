@@ -27,6 +27,10 @@ public class MainActivity extends AppCompatActivity {
     ToDoItemDB db;
     public static final String EXTRA_IS_NEW = "isNew";
 
+    /**
+     * mLauncher is used to hand off an intent to another activity and
+     * handle the result of the activity when it returns.
+     */
     ActivityResultLauncher<Intent> mLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
@@ -63,6 +67,10 @@ public class MainActivity extends AppCompatActivity {
             }
     );
 
+    /**
+     * Called when the activity is first created.
+     * @param savedInstanceState
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -82,6 +90,9 @@ public class MainActivity extends AppCompatActivity {
         setupListViewListener();
     }
 
+    /**
+     * Set up the listeners for the list view.
+     */
     private void setupListViewListener() {
         adapter.setOnItemLongClickListener(position -> {
             Log.i("MainActivity", "Long Clicked item " + position);
@@ -122,6 +133,10 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Called when the add button is clicked.
+     * @param view
+     */
     public void onAddItemClick(View view) {
         // Takes you to the edit item activity
         Intent intent = new Intent(this, EditToDoItemActivity.class);
@@ -132,6 +147,10 @@ public class MainActivity extends AppCompatActivity {
 
 
     //DB Methods
+
+    /**
+     * Reads the items from ToDoItemDB and stores them in dataModels.
+     */
     private void readItemsFromDatabase() {
 //Use asynchronous task to run query on the background and wait for result
         try {
@@ -157,6 +176,9 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Saves the items in dataModels to ToDoItemDB.
+     */
     private void saveItemsToDatabase() {
 //Use asynchronous task to run query on the background to avoid locking UI
         try {

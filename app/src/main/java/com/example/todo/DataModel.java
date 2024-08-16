@@ -2,6 +2,9 @@ package com.example.todo;
 
 import java.time.LocalDateTime;
 
+/**
+ * DataModel holds the data for each list view item.
+ */
 public class DataModel {
     private String name;
     private boolean checked;

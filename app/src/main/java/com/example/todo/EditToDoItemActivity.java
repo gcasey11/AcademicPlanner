@@ -51,10 +51,12 @@ public class EditToDoItemActivity extends Activity implements
 		// Show original content in the text field
 		etItem = findViewById(R.id.etEditItem);
 
+		// Populate type arraylist
 		type.add("Class");
 		type.add("Assignment");
 		type.add("Exam");
 
+		// Find the spinner and set the listener
 		spinner = findViewById(R.id.spinner);
 		spinner.setOnItemSelectedListener(this);
 
@@ -76,14 +78,16 @@ public class EditToDoItemActivity extends Activity implements
 		// Get the data from the main activity screen
 		isNew = getIntent().getBooleanExtra(EXTRA_IS_NEW, false);
 
+		// If the item is not new, it will set up all of the fields as they are in the data model to be edited
 		if (!isNew) {
 			String editItem = getIntent().getStringExtra("item");
 			position = getIntent().getIntExtra("position",-1);
 			date = (LocalDateTime) getIntent().getSerializableExtra("date");
 			etItem.setText(editItem);
 			spinner.setSelection(type.indexOf(getIntent().getStringExtra("type")));
-
 		}
+		// If the item is new, the date will be set to today and the time will be set to the current time
+		// The rest of the fields will be left blank to be edited.
 		else {
 			date = LocalDateTime.now();
 		}
@@ -94,6 +98,11 @@ public class EditToDoItemActivity extends Activity implements
 		timeButton.setText(formattedTime);
 	}
 
+	/**
+	 * Called when the submit button is clicked.
+	 * Passes the data back to the main activity
+	 * @param v
+	 */
 	public void onSubmit(View v) {
 		// Prepare data intent for sending it back
 		Intent data = new Intent();
@@ -110,6 +119,11 @@ public class EditToDoItemActivity extends Activity implements
 		finish(); // Close the activity, pass data to parent
 	}
 
+	/**
+	 * Called when the cancel button is clicked.
+	 * Does not pass any data back to the main activity.
+	 * @param v
+	 */
 	public void onCancel(View v) {
 		AlertDialog.Builder builder = new AlertDialog.Builder(this);
 		builder.setTitle("Cancelling")
@@ -127,6 +141,7 @@ public class EditToDoItemActivity extends Activity implements
 	}
 
 	//Performing action onItemSelected and onNothing selected
+	//Spinner interface
 	@Override
 	public void onItemSelected(AdapterView<?> arg0, View arg1, int position, long id) {
 	}
@@ -134,6 +149,11 @@ public class EditToDoItemActivity extends Activity implements
 	public void onNothingSelected(AdapterView<?> arg0) {
 	}
 
+	/**
+	 * Opens the calendar dialog.
+	 * If the item is new, the date will be set to today.
+	 * Otherwise, the date will be set to the item's current due date.
+	 */
 	private void openCalendarDialog() {
 		DatePickerDialog calendarDialog = new DatePickerDialog(this, (datePicker, year, month, day) -> {
             month = month + 1;
@@ -148,6 +168,11 @@ public class EditToDoItemActivity extends Activity implements
 		calendarDialog.show();
 	}
 
+	/**
+	 * Opens the time dialog.
+	 * If the item is new, the time will be set to the current time.
+	 * Otherwise, the time will be set to the items due date time.
+	 */
 	private void openTimeDialog() {
 		TimePickerDialog timePickerDialog = new TimePickerDialog(this, (timePicker, hours, minutes) -> {
             date = LocalDateTime.of(date.getYear(), date.getMonthValue(), date.getDayOfMonth(), hours, minutes);

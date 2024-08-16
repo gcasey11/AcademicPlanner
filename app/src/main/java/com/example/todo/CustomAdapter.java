@@ -14,6 +14,10 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 
+/**
+ * CustomAdapter is a custom adapter for the list view.
+ * It is used to be able to hold the checkbox, date, and type state in a single item.
+ */
 public class CustomAdapter extends ArrayAdapter<DataModel> {
 
     private final ArrayList<DataModel> dataSet;
@@ -26,32 +30,44 @@ public class CustomAdapter extends ArrayAdapter<DataModel> {
         void onCheckboxClick(int position);
     }
 
+    // Interface for item click listener
     public interface OnItemClickListener {
         void onItemClick(int position);
     }
 
+    // Interface for item long click listener
     public interface OnItemLongClickListener {
         void onItemLongClick(int position);
     }
 
+    /**
+     * Constructor for the custom adapter.
+     * @param dataSet
+     * @param mContext
+     */
     public CustomAdapter(ArrayList<DataModel> dataSet, Context mContext) {
         super(mContext, R.layout.raw_item, dataSet);
         this.dataSet = dataSet;
     }
 
-    // Setter for the listener
+    // Setter for the checkbox click listener
     public void setOnCheckboxClickListener(OnCheckboxClickListener listener) {
         this.onCheckboxClickListener = listener;
     }
 
+    // Setter for the item click listener
     public void setOnItemClickListener(OnItemClickListener listener) {
         this.onItemClickListener = listener;
     }
 
+    // Setter for the item long click listener
     public void setOnItemLongClickListener(OnItemLongClickListener listener) {
         this.onItemLongClickListener = listener;
     }
 
+    /**
+     * ViewHolder class to hold the views in the list item.
+     */
     private static class ViewHolder {
         TextView txtName;
         TextView selectionType;
@@ -69,6 +85,13 @@ public class CustomAdapter extends ArrayAdapter<DataModel> {
         return dataSet.get(position);
     }
 
+    /**
+     * getView is called to populate the list view.
+     * @param position
+     * @param convertView
+     * @param parent
+     * @return
+     */
     @NonNull
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
@@ -90,6 +113,7 @@ public class CustomAdapter extends ArrayAdapter<DataModel> {
             result = convertView;
         }
 
+        // Sets the data for the view
         DataModel dataModel = getItem(position);
         assert dataModel != null;
         viewHolder.txtName.setText(dataModel.getName());
@@ -105,12 +129,14 @@ public class CustomAdapter extends ArrayAdapter<DataModel> {
             viewHolder.dueDate.setText("OVERDUE");
         }
 
+        // Add a click listener to the checkbox
         viewHolder.checkBox.setOnClickListener(v -> {
             if (onCheckboxClickListener != null) {
                 onCheckboxClickListener.onCheckboxClick(position);
             }
         });
 
+        // Add click listeners to the text views
         setClickListeners(viewHolder.txtName, position);
         setClickListeners(viewHolder.selectionType, position);
         setClickListeners(viewHolder.dueDate, position);
