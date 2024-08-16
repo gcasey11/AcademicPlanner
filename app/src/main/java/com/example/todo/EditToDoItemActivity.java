@@ -1,5 +1,7 @@
 package com.example.todo;
 
+import static com.example.todo.MainActivity.EXTRA_IS_NEW;
+
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
@@ -27,7 +29,7 @@ import java.util.Locale;
 public class EditToDoItemActivity extends Activity implements
 		AdapterView.OnItemSelectedListener
 {
-	public int position=0;
+	private int position=0;
 	EditText etItem;
 	Spinner spinner;
 	ArrayList<String> type = new ArrayList<>();
@@ -47,16 +49,16 @@ public class EditToDoItemActivity extends Activity implements
 
 
 		// Show original content in the text field
-		etItem = (EditText)findViewById(R.id.etEditItem);
+		etItem = findViewById(R.id.etEditItem);
 
 		type.add("Class");
 		type.add("Assignment");
 		type.add("Exam");
 
-		spinner = (Spinner) findViewById(R.id.spinner);
+		spinner = findViewById(R.id.spinner);
 		spinner.setOnItemSelectedListener(this);
 
-		ArrayAdapter aa = new ArrayAdapter(this,android.R.layout.simple_spinner_item,type);
+		ArrayAdapter<String> aa = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, type);
 		aa.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		//Setting the ArrayAdapter data on the Spinner
 		spinner.setAdapter(aa);
@@ -72,7 +74,7 @@ public class EditToDoItemActivity extends Activity implements
 		timeButton.setOnClickListener(v -> openTimeDialog());
 
 		// Get the data from the main activity screen
-		isNew = getIntent().getBooleanExtra("isNew", false);
+		isNew = getIntent().getBooleanExtra(EXTRA_IS_NEW, false);
 
 		if (!isNew) {
 			String editItem = getIntent().getStringExtra("item");
@@ -98,7 +100,7 @@ public class EditToDoItemActivity extends Activity implements
 
 		// Pass relevant data back as a result
 		data.putExtra("item", etItem.getText().toString());
-		data.putExtra("isNew", getIntent().getBooleanExtra("isNew", false));
+		data.putExtra(EXTRA_IS_NEW, getIntent().getBooleanExtra(EXTRA_IS_NEW, false));
 		data.putExtra("type", spinner.getSelectedItem().toString());
 		data.putExtra("position", position);
 		data.putExtra("date", date);
@@ -131,7 +133,7 @@ public class EditToDoItemActivity extends Activity implements
 	}
 	@Override
 	public void onNothingSelected(AdapterView<?> arg0) {
-		if (getIntent().getBooleanExtra("isNew", false)) {
+		if (getIntent().getBooleanExtra(EXTRA_IS_NEW, false)) {
 			Toast.makeText(getApplicationContext(), "Please select a type", Toast.LENGTH_LONG).show();
 		}
 		else {

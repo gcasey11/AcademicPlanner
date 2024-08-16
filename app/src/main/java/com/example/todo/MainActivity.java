@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -15,34 +14,18 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Date;
+import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
 
 public class MainActivity extends AppCompatActivity {
     // Define variables
     ListView listView;
-    ArrayList<String> items;
     CustomAdapter adapter;
-    EditText addItemEditText;
     ArrayList<DataModel> dataModels = new ArrayList<>();
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-// Use "activity_main.xml" as the layout
-        setContentView(R.layout.activity_main);
-// Reference the "listView" variable to the id "lstView" in the layout
-        listView = findViewById(R.id.lstView);
-
-// Create an adapter for the list view using Android's built-in item layout
-
-        dataModels.add(new DataModel("item one",  false, "Assignment", LocalDateTime.now()));
-        dataModels.add(new DataModel("item two", false, "Exam", LocalDateTime.now()));
-        adapter = new CustomAdapter(dataModels, this);
-
-        listView.setAdapter(adapter);
-        // Setup listView listeners
-        setupListViewListener();
-    }
+    ToDoItemDao toDoItemDao;
+    ToDoItemDB db;
+    public static final String EXTRA_IS_NEW = "isNew";
 
     ActivityResultLauncher<Intent> mLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
@@ -53,7 +36,7 @@ public class MainActivity extends AppCompatActivity {
                     String editedItem = Objects.requireNonNull(result.getData().getExtras()).getString("item");
                     String type = Objects.requireNonNull(result.getData().getExtras()).getString("type");
                     LocalDateTime dateTime = (LocalDateTime) Objects.requireNonNull(result.getData().getExtras()).get("date");
-                    boolean isNew = result.getData().getBooleanExtra("isNew", false);
+                    boolean isNew = result.getData().getBooleanExtra(EXTRA_IS_NEW, false);
                     if (!isNew) {
                         int position = result.getData().getIntExtra("position", -1);
                         dataModels.set(position, new DataModel(editedItem, false, type, dateTime));
@@ -61,9 +44,9 @@ public class MainActivity extends AppCompatActivity {
                         // Make a standard toast that just contains text
                         Toast.makeText(getApplicationContext(), "Updated: " + editedItem,
                                 Toast.LENGTH_SHORT).show();
-                    }
-                    else {
+                    } else {
                         dataModels.add(new DataModel(editedItem, false, type, dateTime));
+                        assert editedItem != null;
                         Log.i("Added item to list ", editedItem);
                         // Make a standard toast that just contains text
                         Toast.makeText(getApplicationContext(), "Added: " + editedItem,
@@ -73,12 +56,31 @@ public class MainActivity extends AppCompatActivity {
 
 
                     adapter.notifyDataSetChanged();
-                }
-                else if (result.getResultCode() == RESULT_CANCELED) {
+                    saveItemsToDatabase();
+                } else if (result.getResultCode() == RESULT_CANCELED) {
                     // User cancelled the activity
                 }
             }
     );
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        db = ToDoItemDB.getDatabase(this.getApplication().getApplicationContext());
+        toDoItemDao = db.toDoItemDao();
+        readItemsFromDatabase();
+// Use "activity_main.xml" as the layout
+        setContentView(R.layout.activity_main);
+// Reference the "listView" variable to the id "lstView" in the layout
+        listView = findViewById(R.id.lstView);
+
+// Create an adapter for the list view using Android's built-in item layout
+        adapter = new CustomAdapter(dataModels, this);
+        listView.setAdapter(adapter);
+        // Setup listView listeners
+        setupListViewListener();
+    }
 
     private void setupListViewListener() {
         adapter.setOnItemLongClickListener(position -> {
@@ -89,6 +91,7 @@ public class MainActivity extends AppCompatActivity {
                     .setPositiveButton(R.string.delete, (dialogInterface, i) -> {
                         dataModels.remove(position); // Remove item from the ArrayList
                         adapter.notifyDataSetChanged(); // Notify listView adapter to update the list
+                        saveItemsToDatabase();
                     })
                     .setNegativeButton(R.string.cancel, (dialogInterface, i) -> {
                         // User cancelled the dialog
@@ -101,14 +104,16 @@ public class MainActivity extends AppCompatActivity {
             DataModel dataModel = adapter.getItem(position);
             assert dataModel != null;
             dataModel.setChecked(!dataModel.isChecked());
-            adapter.notifyDataSetChanged();});
+            adapter.notifyDataSetChanged();
+            saveItemsToDatabase();
+        });
 
         // Set a click listener on the list item
         adapter.setOnItemClickListener(position -> {
             // Takes you to the edit item activity
             Intent intent = new Intent(this, EditToDoItemActivity.class);
             // Sets that the item is new and being added rather than edited
-            intent.putExtra("isNew", false);
+            intent.putExtra(EXTRA_IS_NEW, false);
             intent.putExtra("item", dataModels.get(position).getName());
             intent.putExtra("position", position);
             intent.putExtra("type", dataModels.get(position).getType());
@@ -121,8 +126,56 @@ public class MainActivity extends AppCompatActivity {
         // Takes you to the edit item activity
         Intent intent = new Intent(this, EditToDoItemActivity.class);
         // Sets that the item is new and being added rather than edited
-        intent.putExtra("isNew", true);
+        intent.putExtra(EXTRA_IS_NEW, true);
         mLauncher.launch(intent);
+    }
+
+
+    //DB Methods
+    private void readItemsFromDatabase() {
+//Use asynchronous task to run query on the background and wait for result
+        try {
+// Run a task specified by a Runnable Object asynchronously.
+            CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
+                //read items from database
+                List<ToDoItem> itemsFromDB = toDoItemDao.listAllSorted();
+                dataModels = new ArrayList<>();
+                if (itemsFromDB != null && !itemsFromDB.isEmpty()) {
+                    for (ToDoItem item : itemsFromDB) {
+                        dataModels.add(new DataModel(item.getToDoItemName(), item.isChecked(),item.getType(),item.getDate()));
+                        Log.i("SQLite read item", "ID: " + item.getToDoItemID() + " Name: " +
+                                item.getToDoItemName());
+                    }
+                }
+            });
+// Block and wait for the future to complete
+            future.get();
+        } catch (Exception ex) {
+            Log.e("readItemsFromDatabase", ex.getStackTrace().toString());
+        }
+    }
+
+    private void saveItemsToDatabase() {
+//Use asynchronous task to run query on the background to avoid locking UI
+        try {
+// Run a task specified by a Runnable Object asynchronously.
+            CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
+                //delete all items and re-insert
+                toDoItemDao.deleteAll();
+                for (DataModel dataModel : dataModels) {
+                    ToDoItem item = new ToDoItem(dataModel.getName());
+                    item.setChecked(dataModel.isChecked());
+                    item.setType(dataModel.getType());
+                    item.setDate(dataModel.getDate());
+                    toDoItemDao.insert(item);
+                    Log.i("SQLite saved item", item.getToDoItemName());
+                }
+            });
+// Block and wait for the future to complete
+            future.get();
+        } catch (Exception ex) {
+            Log.e("saveItemsToDatabase", ex.getStackTrace().toString());
+        }
     }
 }
 

@@ -16,8 +16,7 @@ import java.util.ArrayList;
 
 public class CustomAdapter extends ArrayAdapter<DataModel> {
 
-    private ArrayList<DataModel> dataSet;
-    private Context mContext;
+    private final ArrayList<DataModel> dataSet;
     private OnCheckboxClickListener onCheckboxClickListener;
     private OnItemClickListener onItemClickListener;
     private OnItemLongClickListener onItemLongClickListener;
@@ -34,11 +33,10 @@ public class CustomAdapter extends ArrayAdapter<DataModel> {
     public interface OnItemLongClickListener {
         void onItemLongClick(int position);
     }
-    
+
     public CustomAdapter(ArrayList<DataModel> dataSet, Context mContext) {
         super(mContext, R.layout.raw_item, dataSet);
         this.dataSet = dataSet;
-        this.mContext = mContext;
     }
 
     // Setter for the listener
@@ -103,11 +101,9 @@ public class CustomAdapter extends ArrayAdapter<DataModel> {
             DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
             String formattedDate = dateFormat.format(dataModel.getDate());
             viewHolder.dueDate.setText(formattedDate);
-        }
-        else {
+        } else {
             viewHolder.dueDate.setText("OVERDUE");
         }
-
 
         viewHolder.checkBox.setOnClickListener(v -> {
             if (onCheckboxClickListener != null) {
@@ -115,45 +111,24 @@ public class CustomAdapter extends ArrayAdapter<DataModel> {
             }
         });
 
-        viewHolder.txtName.setOnClickListener(v -> {
-            if (onItemClickListener != null) {
-                onItemClickListener.onItemClick(position);
-            }
-        });
-
-        viewHolder.txtName.setOnLongClickListener(v -> {
-            if (onItemLongClickListener != null) {
-                onItemLongClickListener.onItemLongClick(position);
-            }
-            return true;
-        });
-
-        viewHolder.selectionType.setOnClickListener(v -> {
-            if (onItemClickListener != null) {
-                onItemClickListener.onItemClick(position);
-            }
-        });
-
-        viewHolder.selectionType.setOnLongClickListener(v -> {
-            if (onItemLongClickListener != null) {
-                onItemLongClickListener.onItemLongClick(position);
-            }
-            return true;
-        });
-
-        viewHolder.dueDate.setOnClickListener(v -> {
-            if (onItemClickListener != null) {
-                onItemClickListener.onItemClick(position);
-            }
-        });
-
-        viewHolder.dueDate.setOnLongClickListener(v -> {
-            if (onItemLongClickListener != null) {
-                onItemLongClickListener.onItemLongClick(position);
-            }
-            return true;
-        });
+        setClickListeners(viewHolder.txtName, position);
+        setClickListeners(viewHolder.selectionType, position);
+        setClickListeners(viewHolder.dueDate, position);
 
         return result;
+    }
+
+    public void setClickListeners(View view, int position) {
+        view.setOnClickListener(v -> {
+            if (onItemClickListener != null) {
+                onItemClickListener.onItemClick(position);
+            }
+        });
+        view.setOnLongClickListener(v -> {
+            if (onItemLongClickListener != null) {
+                onItemLongClickListener.onItemLongClick(position);
+            }
+            return true;
+        });
     }
 }

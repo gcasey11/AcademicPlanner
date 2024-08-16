@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">ToDo</string>
+    <string name="app_name">Academic Planner</string>
     <string name="dialog_delete_title">Delete an item</string>
     <string name="dialog_delete_msg">Have you already completed this item?</string>
     <string name="delete">Yes</string>

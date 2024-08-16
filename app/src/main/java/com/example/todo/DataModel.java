@@ -1,13 +1,13 @@
 package com.example.todo;
 
 import java.time.LocalDateTime;
-import java.util.Date;
 
 public class DataModel {
     private String name;
     private boolean checked;
     private String type;
     private LocalDateTime date;
+
 
     public DataModel(String name, boolean checked, String type, LocalDateTime date) {
         this.name = name;
