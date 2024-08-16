@@ -5,6 +5,7 @@
     <string name="delete">Yes</string>
     <string name="cancel">No</string>
     <string name="edit">Edit</string>
+    <string name="are_you_sure_cancel">Are you sure you want to cancel this edit? Your unsaved changes will be discarded if you click YES</string>
     <string-array name="type">
         <item>Class</item>
         <item>Assignment</item>

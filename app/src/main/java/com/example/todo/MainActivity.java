@@ -142,9 +142,11 @@ public class MainActivity extends AppCompatActivity {
                 dataModels = new ArrayList<>();
                 if (itemsFromDB != null && !itemsFromDB.isEmpty()) {
                     for (ToDoItem item : itemsFromDB) {
-                        dataModels.add(new DataModel(item.getToDoItemName(), item.isChecked(),item.getType(),item.getDate()));
-                        Log.i("SQLite read item", "ID: " + item.getToDoItemID() + " Name: " +
-                                item.getToDoItemName());
+                        dataModels.add(new DataModel(
+                                item.getToDoItemName(),
+                                item.isChecked(),
+                                item.getType(),
+                                item.getDate()));
                     }
                 }
             });

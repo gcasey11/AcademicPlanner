@@ -113,7 +113,7 @@ public class EditToDoItemActivity extends Activity implements
 	public void onCancel(View v) {
 		AlertDialog.Builder builder = new AlertDialog.Builder(this);
 		builder.setTitle("Cancelling")
-				.setMessage("Are you sure you want to cancel this edit? Your unsaved changes will be discarded if you click YES")
+				.setMessage(R.string.are_you_sure_cancel)
 				.setPositiveButton(R.string.delete, (dialogInterface, i) -> {
 					setResult(RESULT_CANCELED); // Set result code and bundle data for response
 					finish(); // Close the activity, pass data to parent
@@ -129,16 +129,9 @@ public class EditToDoItemActivity extends Activity implements
 	//Performing action onItemSelected and onNothing selected
 	@Override
 	public void onItemSelected(AdapterView<?> arg0, View arg1, int position, long id) {
-		Toast.makeText(getApplicationContext(), type.get(position) , Toast.LENGTH_LONG).show();
 	}
 	@Override
 	public void onNothingSelected(AdapterView<?> arg0) {
-		if (getIntent().getBooleanExtra(EXTRA_IS_NEW, false)) {
-			Toast.makeText(getApplicationContext(), "Please select a type", Toast.LENGTH_LONG).show();
-		}
-		else {
-			Toast.makeText(getApplicationContext(), getIntent().getStringExtra("type") , Toast.LENGTH_LONG).show();
-		}
 	}
 
 	private void openCalendarDialog() {
@@ -161,7 +154,8 @@ public class EditToDoItemActivity extends Activity implements
             DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("HH:mm");
             String formattedTime = dateFormat.format(date);
             timeButton.setText(formattedTime);
-        }, !isNew ? date.getHour() : LocalDateTime.now().getHour(), !isNew ? date.getMinute() : LocalDateTime.now().getMinute(), true);
+        }, !isNew ? date.getHour() : LocalDateTime.now().getHour(),
+				!isNew ? date.getMinute() : LocalDateTime.now().getMinute(), true);
 
 		timePickerDialog.show();
 	}
